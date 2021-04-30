@@ -4,13 +4,18 @@
 ### Constants and Environment Variables
 
 # Set-up Constants
-NODE_DIR="./client1"
 DEFAULT_PWD_FILE="./data/default-password.txt"
 GENESIS_PATH="./data/genesis.json"
 
+# Sender and Receiver
+SENDER_DIR="./data/client1"
+SENDER_HTTP_PORT=8000
+SENDER_PORT=30303
+RECEIVER_DIR="./data/client2"
+RECEIVER_HTTP_PORT=8001
+RECEIVER_PORT=30304
+
 # SDX Constants
-SDX_HTTP_PORT=8000
-SDX_PORT=30303
 SDX_NET_ID=18930236
 SDX_NAT_TYPE="any"
 
@@ -28,17 +33,26 @@ then
   geth --datadir ${NODE_DIR} init ${GENESIS_PATH}
 fi
 
-# Start-Up Node
-geth --datadir ${NODE_DIR} \
+# Start-Up Sender
+geth --datadir ${SENDER_DIR} \
 	--http \
-	--http.port ${SDX_HTTP_PORT} \
+	--http.port ${SENDER_HTTP_PORT} \
 	--http.api "eth,net,web3,personal,miner,admin" \
 	--http.corsdomain "*" \
-	--port ${SDX_PORT} \
+	--port ${SENDER_PORT} \
 	--networkid ${SDX_NET_ID} \
 	--nat "${SDX_NAT_TYPE}" \
   --allow-insecure-unlock \
-  --bootnodes "${SDX_BOOT_ENODE}" \
-  --password ${DEFAULT_PWD_FILE} \
-  --unlock "0" \
-  --verbosity 6
+  --bootnodes "${SDX_BOOT_ENODE}" &
+
+# Start-Up Receiver
+geth --datadir ${RECEIVER_DIR} \
+	--http \
+	--http.port ${RECEIVER_HTTP_PORT} \
+	--http.api "eth,net,web3,personal,miner,admin" \
+	--http.corsdomain "*" \
+	--port ${RECEIVER_PORT} \
+	--networkid ${SDX_NET_ID} \
+	--nat "${SDX_NAT_TYPE}" \
+  --allow-insecure-unlock \
+  --bootnodes "${SDX_BOOT_ENODE}"
