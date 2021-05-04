@@ -26,24 +26,26 @@ SDX_BOOT_ENODE="enode://ffb143c241fec6cde474e28106d162ae5107e2d0ab322b27d71ec325
 
 ### Main Execution
 
-# Initialize Node with Genesis Block
-if [ ! -d "${NODE_DIR}/geth" ]
+# Remove Client 1 Geth
+if [ -d "${SENDER_DIR}/geth" ]
 then
-  echo "Syncing Node with Genesis Block"
-  geth --datadir ${NODE_DIR} init ${GENESIS_PATH}
+  echo "Deleting Client 1 Geth"
+  rm -rf "${SENDER_DIR}/geth"
 fi
 
-# Start-Up Sender
-geth --datadir ${SENDER_DIR} \
-	--http \
-	--http.port ${SENDER_HTTP_PORT} \
-	--http.api "eth,net,web3,personal,miner,admin" \
-	--http.corsdomain "*" \
-	--port ${SENDER_PORT} \
-	--networkid ${SDX_NET_ID} \
-	--nat "${SDX_NAT_TYPE}" \
-  --allow-insecure-unlock \
-  --bootnodes "${SDX_BOOT_ENODE}" &
+# Remove Client 2 Geth
+if [ -d "${RECEIVER_DIR}/geth" ]
+then
+  echo "Deleting Client 2 Geth"
+  rm -rf "${RECEIVER_DIR}/geth"
+fi
+
+# Initialize Node with Genesis Block
+echo "Syncing Nodes with Genesis Block"
+geth --datadir ${SENDER_DIR} init ${GENESIS_PATH}
+geth --datadir ${RECEIVER_DIR} init ${GENESIS_PATH}
+
+
 
 # Start-Up Receiver
 geth --datadir ${RECEIVER_DIR} \
@@ -55,4 +57,17 @@ geth --datadir ${RECEIVER_DIR} \
 	--networkid ${SDX_NET_ID} \
 	--nat "${SDX_NAT_TYPE}" \
   --allow-insecure-unlock \
-  --bootnodes "${SDX_BOOT_ENODE}"
+  --bootnodes "${SDX_BOOT_ENODE}" &
+
+# Start-Up Sender
+geth --datadir ${SENDER_DIR} \
+	--http \
+	--http.port ${SENDER_HTTP_PORT} \
+	--http.api "eth,net,web3,personal,miner,admin" \
+	--http.corsdomain "*" \
+	--port ${SENDER_PORT} \
+	--networkid ${SDX_NET_ID} \
+	--nat "${SDX_NAT_TYPE}" \
+  --allow-insecure-unlock \
+  --bootnodes "${SDX_BOOT_ENODE}" \
+  --verbosity 6
